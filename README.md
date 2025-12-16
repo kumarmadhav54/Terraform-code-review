@@ -7,6 +7,7 @@ This repository contains the Terraform infrastructure code for deploying a holid
 - `holiday-shopping-app/`: Main Terraform configuration.
     - `modules/`: Reusable Terraform modules (Compute, Networking, Load Balancing).
 - `review.sh`: Automated code review script.
+- `AGENTIC_SHOWCASE.md`: **[Make this project Agentic!]** Guide to letting AI evolve this script.
 
 ## Using the Review Script
 
@@ -20,8 +21,12 @@ The `review.sh` script is provided to ensure code quality and adherence to best 
 
 1.  **Formatting**: Verifies that all `.tf` files are formatted using `terraform fmt`.
 2.  **Validation**: Checks for syntax validity using `terraform validate`.
-3.  **Descriptions**: Checks that all input variables and outputs have a descriptive explanation.
-4.  **Hardcoded IPs**: Scans for hardcoded IPv4 addresses to prevent hardcoding values.
+3.  **Security**: Ensures `.gitignore` exists and excludes sensitive files (`.tfstate`, `.tfvars`).
+4.  **Module Structure**: Enforces that all modules contain `main.tf`, `variables.tf`, and `outputs.tf`.
+5.  **Descriptions**: Checks that all input variables and outputs have a descriptive explanation.
+6.  **Hardcoded IPs**: Scans for hardcoded IPv4 addresses to prevent hardcoding values.
+7.  **Versioning**: Verifies the existence of `versions.tf` to ensure provider version stability.
+8.  **Tagging**: Checks that AWS resources include a `tags` arguments for cost allocation.
 
 ### Running the Script
 

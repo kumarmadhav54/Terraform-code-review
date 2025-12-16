@@ -3,7 +3,12 @@
 # Terraform Review Script
 # 1. Checks formatting
 # 2. Validates syntax
-# 3. Enforces custom best practices (Descriptions, No Hardcoded IPs)
+# 3. Checks for sensitive files in .gitignore
+# 4. Enforces standard module structure
+# 5. Enforces descriptions for variables/outputs
+# 6. Checks for hardcoded IPs
+# 7. Checks for version pinning
+# 8. Enforces resource tagging
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -15,7 +20,7 @@ echo -e "${YELLOW}Starting Terraform Code Review...${NC}"
 EXIT_CODE=0
 
 # 1. Format Check
-echo -e "\n${YELLOW}[1/4] Checking Formatting...${NC}"
+echo -e "\n${YELLOW}[1/8] Checking Formatting...${NC}"
 if terraform fmt -check -recursive -diff; then
     echo -e "${GREEN}✓ Formatting logic is correct.${NC}"
 else
@@ -24,7 +29,7 @@ else
 fi
 
 # 2. Validation
-echo -e "\n${YELLOW}[2/4] Validating Configuration...${NC}"
+echo -e "\n${YELLOW}[2/8] Validating Configuration...${NC}"
 # We ignore the exit code of init failure for this demo environment, 
 # but in a real CI/CD you would want init to succeed first.
 terraform init -backend=false > /dev/null 2>&1 
@@ -36,37 +41,83 @@ else
     EXIT_CODE=1
 fi
 
-# 3. Custom Check: Missing Descriptions
-echo -e "\n${YELLOW}[3/4] Checking for Missing Descriptions...${NC}"
-# grep for 'variable "name" {' or 'output "name" {' followed by not having 'description =' in the block
-# This is a simple heuristic. For robust parsing, use tflint.
-MISSING_DESC=$(grep -rE --include="*.tf" 'variable\s+"[^"]+"\s*{|output\s+"[^"]+"\s*{' . | grep -v "description" | cut -d: -f1 | uniq)
+# 3. Security: Gitignore Check
+echo -e "\n${YELLOW}[3/8] Checking .gitignore for sensitive files...${NC}"
+if [ ! -f .gitignore ]; then
+    echo -e "${RED}✗ .gitignore file is missing!${NC}"
+    EXIT_CODE=1
+else
+    MISSING_IGNORES=""
+    for pattern in ".terraform" "*.tfstate" "*.tfvars"; do
+        if ! grep -qF "$pattern" .gitignore; then
+            MISSING_IGNORES="$MISSING_IGNORES $pattern"
+        fi
+    done
 
-# A more robust grep approach: find variables without description in the next few lines
-# For this simple script, we'll just check if "description =" is missing from the file entirely if it has variables? 
-# Actually, let's do a per-line check using awk or simple grep search.
+    if [ -n "$MISSING_IGNORES" ]; then
+        echo -e "${RED}✗ .gitignore is missing patterns:$MISSING_IGNORES${NC}"
+        EXIT_CODE=1
+    else
+        echo -e "${GREEN}✓ .gitignore contains necessary sensitive file patterns.${NC}"
+    fi
+fi
 
-# Correct logic: Find all variable/output blocks, inside them check for description. 
-# Implementing a simple grep check: "variable" lines that don't have a nearby description.
-# Simplified: Just check if any .tf file contains "variable" or "output" but doesn't contain "description".
-# This is hard to do perfectly with regex. 
-# Better: Just warn if 'description =' count < 'variable' count in a file.
+# 4. Standard Module Structure Check
+echo -e "\n${YELLOW}[4/8] Checking Module Structure...${NC}"
+MODULES_DIR="holiday-shopping-app/modules"
+if [ -d "$MODULES_DIR" ]; then
+    MODULE_ERRORS=0
+    # Find all subdirectories in modules/
+    for module in "$MODULES_DIR"/*; do
+        if [ -d "$module" ]; then
+            MISSING_FILES=""
+            for required_file in "main.tf" "variables.tf" "outputs.tf"; do
+                if [ ! -f "$module/$required_file" ]; then
+                    MISSING_FILES="$MISSING_FILES $required_file"
+                fi
+            done
 
-FILES_WITH_VARS=$(grep -l "variable" **/*.tf)
-for file in $FILES_WITH_VARS; do
-    VAR_COUNT=$(grep -c "variable" "$file")
-    DESC_COUNT=$(grep -c "description" "$file")
-    
-    if [ "$DESC_COUNT" -lt "$VAR_COUNT" ]; then
-        echo -e "${RED}✗ $file has $VAR_COUNT variables but only $DESC_COUNT descriptions.${NC}"
+            if [ -n "$MISSING_FILES" ]; then
+                echo -e "${RED}✗ Module $(basename "$module") is missing:$MISSING_FILES${NC}"
+                MODULE_ERRORS=1
+            fi
+        fi
+    done
+
+    if [ $MODULE_ERRORS -eq 0 ]; then
+        echo -e "${GREEN}✓ All modules follow standard structure.${NC}"
+    else
         EXIT_CODE=1
     fi
-done
+else
+    echo -e "${YELLOW}SKIP: No modules directory found at $MODULES_DIR.${NC}"
+fi
 
-echo -e "${GREEN}✓ Description check passed (heuristic).${NC}"
+# 5. Custom Check: Missing Descriptions
+echo -e "\n${YELLOW}[5/8] Checking for Missing Descriptions...${NC}"
+# Heuristic: Check if variable/output count > description count in file
+FILES_WITH_VARS=$(grep -lE "variable|output" **/*.tf 2>/dev/null)
+DESC_ERROR=0
+if [ -n "$FILES_WITH_VARS" ]; then
+    for file in $FILES_WITH_VARS; do
+        VAR_COUNT=$(grep -cE "variable|output" "$file")
+        DESC_COUNT=$(grep -c "description" "$file")
+        
+        if [ "$DESC_COUNT" -lt "$VAR_COUNT" ]; then
+            echo -e "${RED}✗ $file has $VAR_COUNT variables/outputs but only $DESC_COUNT descriptions.${NC}"
+            DESC_ERROR=1
+        fi
+    done
+fi
 
-# 4. Custom Check: Hardcoded IPs
-echo -e "\n${YELLOW}[4/4] Checking for Hardcoded IPs...${NC}"
+if [ $DESC_ERROR -eq 1 ]; then
+    EXIT_CODE=1
+else
+    echo -e "${GREEN}✓ Description check passed (heuristic).${NC}"
+fi
+
+# 6. Custom Check: Hardcoded IPs
+echo -e "\n${YELLOW}[6/8] Checking for Hardcoded IPs...${NC}"
 # Matches standard IPv4 patterns, ignoring 0.0.0.0 and localhost
 IP_MATCHES=$(grep -rE --include="*.tf" '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' . | grep -v "0.0.0.0" | grep -v "127.0.0.1")
 
@@ -77,6 +128,46 @@ if [ -n "$IP_MATCHES" ]; then
 else
     echo -e "${GREEN}✓ No hardcoded IPs found.${NC}"
 fi
+
+# 7. Versions Check
+echo -e "\n${YELLOW}[7/8] Checking for versions.tf...${NC}"
+# Check in root or app dir
+if [ -f "versions.tf" ] || [ -f "holiday-shopping-app/versions.tf" ]; then
+    echo -e "${GREEN}✓ versions.tf found.${NC}"
+else
+    echo -e "${RED}✗ versions.tf IS MISSING. Please constrain your provider versions.${NC}"
+    EXIT_CODE=1
+fi
+
+# 8. Resource Tagging Check (Heuristic)
+echo -e "\n${YELLOW}[8/8] Checking for AWS Resource Tagging...${NC}"
+# Find files with aws resources but missing "tags ="
+# This is a loose heuristic.
+FILES_WITH_AWS_RESOURCES=$(grep -l 'resource "aws_' **/*.tf 2>/dev/null)
+TAGGING_ERROR=0
+
+if [ -n "$FILES_WITH_AWS_RESOURCES" ]; then
+    for file in $FILES_WITH_AWS_RESOURCES; do
+        if ! grep -q "tags =" "$file"; then
+            echo -e "${RED}✗ $file contains AWS resources but no 'tags =' block found.${NC}"
+            TAGGING_ERROR=1
+        fi
+    done
+fi
+
+if [ $TAGGING_ERROR -eq 1 ]; then
+    echo -e "${YELLOW}  (Note: All AWS resources that support tags should have them)${NC}"
+    EXIT_CODE=1
+else
+    echo -e "${GREEN}✓ Tagging check passed (heuristic).${NC}"
+fi
+
+
+# ------------------------------------------------------------------
+# [EXTENSION POINT]
+# Agents: Add new custom checks below this line.
+# Increment the check number (e.g., [9/X], [10/X]).
+# ------------------------------------------------------------------
 
 echo -e "\n-----------------------------------"
 if [ $EXIT_CODE -eq 0 ]; then
