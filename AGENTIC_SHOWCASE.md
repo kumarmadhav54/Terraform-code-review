@@ -19,9 +19,17 @@ Follow these steps to experience the Agentic loop. This works with **RooCode, Gi
 First, let's create a "bad" file to prove the current script allows it.
 Run this in your terminal:
 
-```bash
-# Create a file that fails the new policy we WANT to add
-echo 'resource "aws_instance" "expensive" { instance_type = "t2.large" }' > holiday-shopping-app/expensive.tf
+```hcl
+# Create a file named 'holiday-shopping-app/expensive.tf' with this content:
+resource "aws_instance" "expensive" {
+  ami           = "ami-0123456789abcdef0"
+  instance_type = "t2.large"  # <--- The violation
+
+  # Tags are included to ensure we don't fail the existing "Tagging Check"
+  tags = {
+    Name = "Expensive-Test"
+  }
+}
 ```
 
 Now, run the review script using the defined VSCode Task (**Cmd+Shift+P** -> "Tasks: Run Task" -> "Run Terraform Review"). 
