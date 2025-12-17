@@ -5,6 +5,9 @@
             "label": "Run Terraform Review",
             "type": "shell",
             "command": "./review.sh",
+            "windows": {
+                "command": ".\\review.ps1"
+            },
             "group": {
                 "kind": "test",
                 "isDefault": true

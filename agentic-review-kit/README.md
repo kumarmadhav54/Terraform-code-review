@@ -5,36 +5,35 @@ This kit enables **Agentic AI Code Reviews** in any Terraform project. It provid
 ## 🚀 1. Plug & Play Installation
 
 1.  **Copy Files**:
-    *   `review.sh` -> Your project root.
-    *   `.vscode` folder -> Your project root (merge if exists).
+    *   **Mac/Linux**: Copy `review.sh` to your project root.
+    *   **Windows**: Copy `review.ps1` to your project root.
+    *   **VSCode**: Copy the `.vscode` folder to your project root (merge if exists).
 
-2.  **Make Executable**:
-    *   Open terminal in your project.
+2.  **Make Executable (Mac/Linux Only)**:
     *   Run: `chmod +x review.sh`
 
 3.  **Verify**:
     *   **VSCode**: Press `Cmd+Shift+P`, type "Run Task", select `Run Terraform Review`.
-    *   **Terminal**: Run `./review.sh`.
+        *(VSCode will automatically run the correct script for your OS)*
+    *   **Terminal**: Run `./review.sh` or `.\review.ps1`.
 
 ## 🤖 2. The Agentic Workflow
 
-You don't need to write Bash. You just tell the AI what you want.
+You don't need to write Script. You just tell the AI what you want.
 
-**Pre-requisite:** Open `review.sh` in your active editor window so the AI can read it.
+**Pre-requisite:** Open `review.sh` (Mac) or `review.ps1` (Windows) in your active editor window so the AI can read it.
 
 ### Example Prompts
 
 **Scenario A: Cost Control**
-> "I need to enforce cost controls. Modify `review.sh` to add a new check. Fail if any .tf file contains `instance_type` set to `t2.large`. Look for the `[EXTENSION POINT]` and add it there."
+> "I need to enforce cost controls. Add a new check that fails if any .tf file contains `instance_type` set to `t2.large`."
 
 **Scenario B: Security (S3)**
-> "Add a security check at the `[EXTENSION POINT]`. Scan all .tf files for `acl = 'public-read'`. If found, fail the review."
-
-**Scenario C: Naming Conventions**
-> "Enforce consistent naming. Add a check to `review.sh` that ensures all `resource` names start with `proj_`. Insert this logic at the `[EXTENSION POINT]`."
+> "Add a security check. Scan all .tf files for `acl = 'public-read'`. If found, fail the review."
 
 ## 🛠️ What's Inside?
 
-*   `review.sh`: The core script. Includes 8 standard checks + AI Extension Point.
-*   `.vscode/tasks.json`: Pre-configured VSCode Task runner.
+*   `review.sh`: The core script for Mac/Linux.
+*   `review.ps1`: The core script for Windows PowerShell.
+*   `.vscode/tasks.json`: Pre-configured VSCode Task runner (Cross-Platform).
 *   `AGENTIC_SHOWCASE.md`: A demo script you can follow to learn the ropes.

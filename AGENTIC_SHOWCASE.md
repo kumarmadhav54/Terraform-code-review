@@ -1,12 +1,12 @@
 # Agentic AI Showcase: The Self-Evolving Code Review
 
-This project demonstrates **Agentic AI** in action. The `review.sh` script is a "living policy" that acts as its own System Prompt.
+This project demonstrates **Agentic AI** in action. The `review.sh` (or `review.ps1` on Windows) is a "living policy" that acts as its own System Prompt.
 
 ## 🏁 The Goal
 
 You are a developer. Your manager says: **"We need to cut costs. Stop people from using expensive 't2.large' instances!"**
 
-Instead of writing the Bash script yourself, you will ask your AI Agent to do it.
+Instead of writing the script yourself, you will ask your AI Agent to do it.
 
 ---
 
@@ -24,30 +24,29 @@ Run this in your terminal:
 echo 'resource "aws_instance" "expensive" { instance_type = "t2.large" }' > holiday-shopping-app/expensive.tf
 ```
 
-Now, run the review script using the defined VSCode Task (**Cmd+Shift+P** -> "Tasks: Run Task" -> "Run Terraform Review") or terminal:
-
-```bash
-./review.sh
-```
+Now, run the review script using the defined VSCode Task (**Cmd+Shift+P** -> "Tasks: Run Task" -> "Run Terraform Review"). 
+*Note: VSCode will automatically run the correct script for your OS (Windows or Mac).*
 
 **Result:** ✅ **GREEN (Passed)**.
 
 ### Step 2: The Agentic Prompt
 
-1.  Open your **AI Assistant** sidebar.
-2.  **Open `review.sh`** (This is crucial! The AI reads the instructions inside the file).
+1.  Open your **AI Assistant**.
+2.  **Open `review.sh`** (Mac/Linux) or **`review.ps1`** (Windows) so the AI reads the instructions.
 3.  Type this **simple request**:
 
-> **"Add a new check to review.sh that forbids 't2.large' instances."**
+> **"Add a new check to the review script that forbids 't2.large' instances."**
 
-*Note: You don't need to explain valid bash syntax or where to put the code. The file tells the AI exactly what to do!*
+#### 💡 Pro Tip for GitHub Copilot Users
+*   **Use the Sidebar Chat** (Ctrl+Alt+I usually, or the Chat icon) rather than "Inline Chat" (Ctrl+I). The Sidebar has better context awareness of the *entire file*, including the important instruction header.
+*   Make sure `review.ps1` is the **active tab** when you ask.
 
 ### Step 3: Watch the Agent Work
 
 The Agent will:
 1.  Read the **AI AGENT INSTRUCTIONS** at the top of the file.
 2.  Automatically find the `[EXTENSION POINT]`.
-3.  Write the correct Bash code (using `grep`, `RED` colors, etc.).
+3.  Write the correct code (Bash or PowerShell) for you.
 
 ### Step 4: Verify the Evolution
 
@@ -66,7 +65,7 @@ Now that the policy is active, "fix" your code:
 rm holiday-shopping-app/expensive.tf
 ```
 
-Run `review.sh` again.
+Run `review.sh` (or `review.ps1`) again.
 **Result:** ✅ **GREEN (Passed)**.
 
 ---
