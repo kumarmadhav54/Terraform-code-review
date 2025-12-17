@@ -8,44 +8,52 @@ This repository contains the Terraform infrastructure code for deploying a holid
     - `modules/`: Reusable Terraform modules (Compute, Networking, Load Balancing).
 - `review.sh`: Automated code review script.
 - `AGENTIC_SHOWCASE.md`: **[Make this project Agentic!]** Guide to letting AI evolve this script.
+- `agentic-review-kit.zip`: **Plug & Play Kit** to add this review system to *any* project.
 
-## Using the Review Script
+## 📦 Agentic Review Kit (Plug & Play)
 
-The `review.sh` script is provided to ensure code quality and adherence to best practices before pushing changes. It is recommended to run this script before every commit.
+This project includes a portable kit that allows you to drop this agentic review system into **any** new or existing Terraform project.
 
-### Prerequisites
+### How to Install
 
-- [Terraform](https://www.terraform.io/downloads) must be installed and available in your system PATH.
+1.  **Download/Unzip** `agentic-review-kit.zip` (found in this repo).
+2.  **Drag & Drop** the contents (`review.sh` and `.vscode/`) into your new project's root directory.
+3.  **Activate**:
+    ```bash
+    chmod +x review.sh
+    ```
+4.  **Run**:
+    *   **VSCode**: Cmd+Shift+P -> `Tasks: Run Task` -> `Run Terraform Review`.
+    *   **Terminal**: `./review.sh`.
 
-### What it Checks
+### 🤖 The Agentic Workflow (How to Prompt)
 
-1.  **Formatting**: Verifies that all `.tf` files are formatted using `terraform fmt`.
-2.  **Validation**: Checks for syntax validity using `terraform validate`.
-3.  **Security**: Ensures `.gitignore` exists and excludes sensitive files (`.tfstate`, `.tfvars`).
-4.  **Module Structure**: Enforces that all modules contain `main.tf`, `variables.tf`, and `outputs.tf`.
-5.  **Descriptions**: Checks that all input variables and outputs have a descriptive explanation.
-6.  **Hardcoded IPs**: Scans for hardcoded IPv4 addresses to prevent hardcoding values.
-7.  **Versioning**: Verifies the existence of `versions.tf` to ensure provider version stability.
-8.  **Tagging**: Checks that AWS resources include a `tags` arguments for cost allocation.
+Once installed, use your AI Assistant (RooCode, Copilot, Cursor) to manage the rules.
 
-### Running the Script
+**1. Open `review.sh`** in your editor (context is key).
+**2. Prompt the AI** with a request like:
 
-You can run the script from the root of the repository:
+> "I need to enforce cost controls. Modify `review.sh` to add a new check. Fail if any .tf file contains `instance_type` set to `t2.large`. Look for the `[EXTENSION POINT]` and add it there."
+
+The script is designed with an **Extension Point** that allows AI agents to safely inject new logic without breaking existing checks.
+
+---
+
+## Default Review Script Checks
+
+The `review.sh` script performs these standard checks out-of-the-box:
+
+1.  **Formatting**: Verifies `terraform fmt` compliance.
+2.  **Validation**: Verifies `terraform validate` success.
+3.  **Security**: Checks `.gitignore` for sensitive files.
+4.  **Module Structure**: Ensures `main.tf`, `variables.tf`, `outputs.tf` exist.
+5.  **Descriptions**: Enforces descriptions for all variables/outputs.
+6.  **Hardcoded IPs**: Bans hardcoded IPv4 addresses.
+7.  **Versioning**: Checks for `versions.tf`.
+8.  **Tagging**: Checks for AWS resource tags.
+
+## Usage
 
 ```bash
-# Make the script executable (if not already)
-chmod +x review.sh
-
-# Run the script
 ./review.sh
 ```
-
-Or simply:
-
-```bash
-bash review.sh
-```
-
-If the script passes all checks, you will see a success message: `Code Review Passed! 🚀`
-
-If it fails, review the output for specific errors (e.g., missing descriptions, syntax errors) and fix them before committing.
