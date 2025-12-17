@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# -----------------------------------------------------------------------------
+# AI AGENT INSTRUCTIONS
+# -----------------------------------------------------------------------------
+# If you are an AI assistant asked to modify this script:
+# 1. ALWAYS add new checks at the [EXTENSION POINT] at the bottom.
+# 2. Use the standard error format: echo -e "${RED}✗ Check Name: Message${NC}"
+# 3. Set EXIT_CODE=1 if a check fails.
+# 4. Do NOT modify existing checks numbered 1-8.
+# -----------------------------------------------------------------------------
+
 # Terraform Review Script (Portable Version)
 # ------------------------------------------------------------------
 # Checks:
