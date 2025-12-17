@@ -1,44 +1,85 @@
 # Agentic AI Showcase: The Self-Evolving Code Review
 
-This project is designed to demonstrate **Agentic AI**. The `review.sh` script is not just a static tool; it is a "living policy" that an AI Agent can easily understand and evolve.
+This project demonstrates **Agentic AI** in action. The `review.sh` script is a "living policy" designed to be evolved by **any AI Agent** (RooCode, GitHub Copilot, Cursor, etc.) in VSCode.
 
-## The Concept
+## 🏁 The Goal
 
-In a traditional workflow, changing a CI/CD script requires a human to write bash code. In an **Agentic Workflow**, you simply *tell* the Agent the new policy, and it implements the checks for you.
+You are a developer. Your manager says: **"We need to cut costs. Stop people from using expensive 't2.large' instances!"**
 
-We have structured `review.sh` with a specific **[EXTENSION POINT]** that Agents can recognize.
+Instead of writing the Bash script yourself, you will ask your AI Agent to do it.
 
-## Demo Scenarios
+---
 
-Here are 3 "Challenge Prompts" you can copy-paste to an AI (like Gemini, ChatGPT, or Claude) to see this in action.
+## 🚀 The Agentic Workflow
 
-### Scenario 1: Cost Control (The "T2 Large" Ban)
+Follow these steps to experience the Agentic loop. This works with **RooCode, GitHub Copilot, Cursor**, or any other coding assistant.
 
-**Goal:** Create a policy that forbids expensive instance types.
+### Step 1: Create a "Validation Test" (The Trap)
 
-**Prompt for Agent:**
-> "I need to save money. Update the review.sh script to add a new check. It should fail if any file contains 'instance_type' set to 't2.large' or 'm5.large'. Call it the 'Cost Control Check'."
+First, let's create a "bad" file to prove the current script allows it.
+Run this in your terminal:
 
-**Expected Result:**
-The Agent will append a new shell script block at the `[EXTENSION POINT]` that greps for `t2.large`, and correctly updates the failure logic.
+```bash
+# Create a file that fails the new policy we WANT to add
+echo 'resource "aws_instance" "expensive" { instance_type = "t2.large" }' > holiday-shopping-app/expensive.tf
+```
 
-### Scenario 2: Security Hardening (No Public S3)
+Now, run the review script using the defined VSCode Task (**Cmd+Shift+P** -> "Tasks: Run Task" -> "Run Terraform Review") or terminal:
 
-**Goal:** Ensure no S3 buckets are accidentally exposed.
+```bash
+./review.sh
+```
 
-**Prompt for Agent:**
-> "We are auditing security. Add a check to review.sh that scans for 'acl = \"public-read\"' or 'acl = \"public-read-write\"' in any .tf file. If found, fail the review with a security warning."
+**Result:** ✅ **GREEN (Passed)**.
+*The script currently doesn't know about the new rule.*
 
-### Scenario 3: Naming Convention Enforcement
+### Step 2: The Agentic Prompt
 
-**Goal:** Enforce a strict naming pattern for consistency.
+1.  Open your **AI Assistant** sidebar (RooCode, Copilot Chat, etc.).
+2.  **Open `review.sh`** so the Agent can see the file context.
+3.  Copy and paste this prompt:
 
-**Prompt for Agent:**
-> "Enforce consistency. Add a check to review.sh that ensures all 'resource' blocks have names starting with 'proj_'. For example, 'resource \"aws_s3_bucket\" \"proj_my_bucket\"' is okay, but 'my_bucket' is not."
+> **"I need to enforce cost controls. Modify review.sh to add a new check [9/X] that fails if any .tf file contains 'instance_type' set to 't2.large' or 'm5.large'. Look for the [EXTENSION POINT] and add it there."**
 
-## How it Works
+### Step 3: Watch the Agent Work
 
-The scripts are written in standard Bash, but structured with clear comments (`# 1. Format Check`, `# [EXTENSION POINT]`). This allows Large Language Models (LLMs) to:
-1.  **Parse** the existing structure.
-2.  **Identify** where to insert new logic.
-3.  **Mimic** the existing error reporting style (`RED` colors, `EXIT_CODE=1`).
+The Agent will:
+1.  Read `review.sh`.
+2.  Find the `[EXTENSION POINT]`.
+3.  Write the Bash code for you (using `grep` or similar logic).
+4.  Apply the edit (or ask you to apply it).
+
+### Step 4: Verify the Evolution
+
+Run the review script again:
+(**Cmd+Shift+P** -> "Tasks: Run Task" -> "Run Terraform Review")
+
+**Result:** ❌ **RED (Failed)**.
+It should now say something like:
+`✗ Cost Control: Found expensive instance types...`
+
+### Step 5: Fix the Infrastructure
+
+Now that the policy is active, "fix" your code:
+
+```bash
+rm holiday-shopping-app/expensive.tf
+```
+
+Run `review.sh` again.
+**Result:** ✅ **GREEN (Passed)**.
+
+---
+
+## 🧠 Why this matters
+
+You just implemented a DevOps policy **without writing a single line of Bash**.
+You treated the **Review Script as an API** and the **Agent as the Interface**.
+
+## Other Scenarios to Try
+
+### Security Hardening (No Public S3)
+> "We are auditing security. Add a check to review.sh that scans for 'acl = \"public-read\"' in any .tf file. If found, fail the review."
+
+### Naming Convention
+> "Enforce consistency. Add a check to review.sh that ensures all 'resource' blocks have names starting with 'proj_'. E.g. 'resource \"aws_s3_bucket\" \"proj_my_bucket\"' is okay."
